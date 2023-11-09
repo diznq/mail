@@ -3,7 +3,9 @@ local backend = require("mail.backends")
 
 local mail = {
     --- @type smtp_user_repository
-    user_repository = backend.users
+    user_repository = backend.users,
+    --- @type smtp_mail_repository
+    mail_repository = backend.mails
 }
 
 ---Initialize the mail component
@@ -14,7 +16,7 @@ function mail:init(params)
     self.mail_repository = params.mails or backend.mails
 
     smtp:register_handler("main", function (mail)
-        return self.mail_repository:store_mail(mail)
+        self.mail_repository:store_mail(mail)
     end)
 end
 
