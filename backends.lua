@@ -38,14 +38,14 @@ function smtp_user_repository:login(email, password)
 end
 
 --- Store e-mail into repository
+---@param user smtp_user
 ---@param mail mailparam e-mail
 ---@return aiopromise<{error: string|nil, ok: boolean|nil}> success
-function smtp_mail_repository:store_mail(mail)
+function smtp_mail_repository:store_mail(user, mail)
     local resolve, resolver = aio:prepare_promise()
-    for _, to in ipairs(mail.to) do
-        self.mails[to] = self.mails[to] or {}
-        self.mails[to][#self.mails[to]+1] = mail
-    end
+    local to = user.email
+    self.mails[to] = self.mails[to] or {}
+    self.mails[to][#self.mails[to]+1] = mail
     resolve({ok = true})
     return resolver
 end
