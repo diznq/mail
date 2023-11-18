@@ -11,6 +11,7 @@
             | <p>#[[email.error]]</p>
         else
             | <h1>#[[email.subject]]</h1>
+            | <span class="time">Received at: <nobr>#[[isodate(email.received)]]</nobr></span>
             | <pre>#[[email.body]]</pre>
         end
     end

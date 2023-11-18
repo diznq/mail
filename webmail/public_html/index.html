@@ -13,14 +13,17 @@
             | <h1>Your mailbox is empty</h1>
         else
             | <h1>#[[#mails.mails]] e-mails received</h1>
+            | <div class="e-mails">
             for _, mail in ipairs(mails.mails) do
                 ```
                 <a href="#[[to_url('/mail/email', {id=mail.id, u=session.logged.id})]]" class="e-mail">
-                    <div class="subject">#[[mail.subject]]</div>
-                    <div class="sender">#[[mail.from.email]]</div>
+                    <span class="sender">#[[mail.from.email]]</span>
+                    <span class="subject">#[[mail.subject]]</span>
+                    <span class="time"><nobr>#[[isodate(mail.received)]]</nobr></span>
                 </a>
                 ```
             end
+            | </div>
         end
     end
 ?>

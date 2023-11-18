@@ -183,7 +183,7 @@ end
 ---@return aiopromise<{mails: mailparam[], error: string?, pivot: string}> mails
 function mysql_backend_:load_mails(user_id, pivot, size)
     local resolve, resolver = aio:prepare_promise()
-    self.mails.all:byUserId(user_id)(function (mails)
+    self.mails.all:byUserId(user_id, {orderBy = "received_at DESC"})(function (mails)
         if iserror(mails) then
             resolve(mails)
         else
@@ -202,6 +202,7 @@ function mysql_backend_.transform_mail(mail)
         to = {
             email = mysql_backend_.to_user_id(mail.userId),
         },
+        received = mail.receivedAt,
         id = mail.id,
         subject = mail.mailSubject,
         body = mail.mailRaw
