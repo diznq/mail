@@ -1,6 +1,6 @@
 <?lu
     if headers.cookie then
-        local found = "1" -- aio:decrypt(headers.cookie:match("mid=([^ ;]+)"), aio:create_key("/session"))
+        local found = aio:decrypt(headers.cookie:match("mid=([^ ;]+)"), aio:create_key("/session"))
         if found and tonumber(found) then
             local user = await(webmail.mail:get_user_by_id(found))
             if user and not iserror(user) then
