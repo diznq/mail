@@ -148,6 +148,7 @@ end
 
 function mysql_backend_:encode_password(email, password)
     local pass = codec.hex_encode(crypto.hmac_sha256(crypto.hmac_sha256(password, email), self.salt))
+    print(pass)
     return pass
 end
 

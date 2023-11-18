@@ -6,7 +6,7 @@
         if found and not iserror(found) then
             status("302 Temporary redirect")
             header("set-cookie", "pid=" .. aio:encrypt(tostring(found.id), aio:create_key("/session")) .. "; max-age=31536000; HttpOnly")
-            header("location", "/")
+            header("location", "/mail/")
             return
         elseif iserror(found) then
             locals.errors = {found.error}
