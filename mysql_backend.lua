@@ -132,9 +132,9 @@ function mysql_backend_:login(email, password)
     local resolve, resolver = aio:prepare_promise()
     self.users.one:byHandlePassword(email, self:encode_password(email, password))(function (result)
         if result == nil then
-            resolve(make_error("invalid user or password/1"))
+            resolve(make_error("invalid user or password"))
         elseif iserror(result) then
-            resolve(make_error("invalid user or password/2"))
+            resolve(make_error("invalid user or password"))
         else
             resolve({
                 id = self.to_user_id(result.id),
