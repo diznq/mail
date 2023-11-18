@@ -100,7 +100,8 @@ if not ... then
         port = tonumber(os.getenv("MYSQL_PORT") or "3306"),
         user = os.getenv("MYSQL_USER") or "mail",
         password = os.getenv("MYSQL_PASSWORD") or "smtp25",
-        db = os.getenv("MYSQL_DB") or "mails"
+        db = os.getenv("MYSQL_DB") or "mails",
+        salt = os.getenv("SALT") or "salt"
     })
     core_mail:init({
         smtp = PORT % 1000 == 25,
