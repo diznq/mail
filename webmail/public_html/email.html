@@ -10,8 +10,16 @@
             | <h1>E-mail not found</h1>
             | <p>#[[email.error]]</p>
         else
+            if email.subfolder == "" then
+                email.subfolder = "[direct]"
+                email.subfolderClass = "system"
+            else
+                email.subfolderClass = "custom"
+            end
             | <h1>#[[email.subject]]</h1>
-            | <span class="time">Received at: <nobr>#[[isodate(email.received)]]</nobr></span>
+            | <span class="time">Received at: <nobr>#[[isodate(email.received)]]</nobr></span><br>
+            | <span class="sender">Sender address: <nobr>#[[email.sender]]</nobr></span><br>
+            | <span class="folder #[[email.subfolderClass]]">Folder: <nobr>#[[email.subfolder]]</nobr></span><br>
             | <pre>#[[email.body]]</pre>
         end
     end

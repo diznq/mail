@@ -9,23 +9,27 @@ local direction = { inbound = 0, outbound = 1 }
 mysql_backend_ = mysql_backend_ or {
     --- @type mysql
     connection = nil,
-    orm_users = nil
+    orm_users = nil,
+    host_name = "localhost"
 }
 
 local initialize_query = [[
 create table if not exists users(
     id int primary key auto_increment,
-    handle varchar(120),
-    password varchar(100)
+    handle varchar(120) not null,
+    name text not null,
+    password varchar(100) not null
 );
 
 create table if not exists mails(
     id varchar(96) primary key,
     user_id int not null,
+    subfolder varchar(64) not null,
     mail_from text not null,
     mail_from_display text not null,
     mail_subject text not null,
     mail_raw text not null,
+    mail_sender text not null,
     direction int default 0,
     received_at datetime default current_timestamp,
     foreign key (user_id) references users(id)
@@ -55,6 +59,7 @@ function mysql_backend_:init(params)
         entity = {
             id = { field = "id", type = orm.t.int },
             handle = { field = "handle", type = orm.t.varchar(120) },
+            name = { field = "name", type = orm.t.text },
             password = { field = "password", type = orm.t.varchar(100) }
         },
         findById = true,
@@ -69,9 +74,11 @@ function mysql_backend_:init(params)
         entity = {
             id = { field = "id", type = orm.t.text },
             userId = { field = "user_id", type = orm.t.int },
+            subfolder = { field = "subfolder", type = orm.t.varchar(64) },
             mailFrom = { field = "mail_from", type = orm.t.text },
             mailFromDisplay = { field = "mail_from_display", type = orm.t.text },
             mailSubject = { field = "mail_subject", type = orm.t.text },
+            mailSender = { field = "mail_sender", type = orm.t.text },
             mailRaw = { field = "mail_raw", type = orm.t.text },
             direction = { field = "direction", type = orm.t.int },
             receivedAt = { field = "received_at", type = orm.t.datetime }
@@ -82,12 +89,25 @@ function mysql_backend_:init(params)
     })
 end
 
+--- Resolve e-mail into real e-mail and subfolder
+---@param email string targeted e-mail
+---@return string email
+---@return string subfolder
+function mysql_backend_:resolve_email(email)
+    local subfolder, email = email:match("^(.-).mbox.(.+)$")
+    if subfolder then
+        return email, subfolder
+    end
+    return email, ""
+end
+
 --- Get user by e-mail address
 ---@param email string user e-mail address
 ---@return aiopromise<smtp_user> user
 function mysql_backend_:get_user(email)
     local resolve, resolver = aio:prepare_promise()
-    self.users.one:byHandle(email)(function (result)
+    local real_email, subfolder = self:resolve_email(email)
+    self.users.one:byHandle(real_email)(function (result)
         if result == nil then
             resolve(make_error("user not found"))
         elseif iserror(result) then
@@ -95,8 +115,9 @@ function mysql_backend_:get_user(email)
         else
             resolve({
                 id = self.to_user_id(result.id),
+                subfolder = subfolder,
                 email = result.handle,
-                name = result.handle
+                name = result.name
             })
         end
     end)
@@ -116,8 +137,9 @@ function mysql_backend_:get_user_by_id(user_id)
         else
             resolve({
                 id = self.to_user_id(result.id),
+                subfolder = "",
                 email = result.handle,
-                name = result.handle
+                name = result.name
             })
         end
     end)
@@ -138,6 +160,7 @@ function mysql_backend_:login(email, password)
         else
             resolve({
                 id = self.to_user_id(result.id),
+                subfolder = "",
                 email = result.handle,
                 name = result.handle
             })
@@ -161,9 +184,11 @@ function mysql_backend_:store_mail(user, mail)
     self.mails:insert({
         id = mail.id,
         userId = self.from_user_id(user.id),
+        subfolder=user.subfolder,
         mailFrom = mail.from.email,
         mailFromDisplay = mail.from.name or mail.from.email,
         mailSubject = mail.subject,
+        mailSender = mail.sender,
         mailRaw = mail.body,
         direction = direction.inbound,
         receivedAt = mail.received
@@ -204,6 +229,8 @@ function mysql_backend_.transform_mail(mail)
             email = mysql_backend_.to_user_id(mail.userId),
         },
         received = mail.receivedAt,
+        subfolder = mail.subfolder,
+        sender = mail.mailSender,
         id = mail.id,
         subject = mail.mailSubject,
         body = mail.mailRaw

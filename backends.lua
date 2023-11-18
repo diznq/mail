@@ -3,6 +3,7 @@ require("aio.aio")
 --- @class smtp_user
 local smtp_user = {
     id = "john.doe@80s",
+    subfolder = "",
     email = "john.doe@80s",
     name = "John Doe",
     --- @type string|nil

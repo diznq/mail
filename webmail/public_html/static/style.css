@@ -17,17 +17,23 @@ a.e-mail {
     cursor: pointer;
 }
 
+span.header {
+    display: table-row;
+    padding: 1em;
+    font-weight: 600;
+}
+
 a.e-mail:hover {
     background-color: beige;
 }
 
-a.e-mail span {
+a.e-mail span, span.header span {
     display: table-cell;
     padding: 0.25rem;
 }
 
 a.e-mail .subject {
-    width: 100%;
+    width: 70%;
 }
 
 a:focus, a:link, a:active {
