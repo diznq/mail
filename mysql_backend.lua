@@ -165,7 +165,8 @@ function mysql_backend_:store_mail(user, mail)
         mailFromDisplay = mail.from.name or mail.from.email,
         mailSubject = mail.subject,
         mailRaw = mail.body,
-        direction = direction.inbound
+        direction = direction.inbound,
+        received = mail.received
     })(function (result)
         if iserror(result) then
             resolve({error = result.error, ok = false})
