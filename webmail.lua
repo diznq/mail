@@ -12,7 +12,8 @@ function webmail:init(params)
     self.mail = params.mail
     httpd:initialize({
         root = "mail/webmail/",
-        master_key = codec.hex_encode(crypto.sha256(os.getenv("MASTER_KEY") or "webmail"))
+        master_key = codec.hex_encode(crypto.sha256(os.getenv("MASTER_KEY") or "webmail")),
+        base_prefix = "/mail"
     })
 end
 

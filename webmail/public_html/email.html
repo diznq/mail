@@ -2,7 +2,7 @@
 <?lu
     if not session.logged or query.e.id == nil or query.e.u == nil or query.e.u ~= tostring(session.logged.id) then
         status("302 Temporary redirect")
-        header("location", "/login")
+        header("location", "/mail/login")
         return
     else
         local email = await(webmail.mail:load_mail(tostring(session.logged.id), query.e.id))

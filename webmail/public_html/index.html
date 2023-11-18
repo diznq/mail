@@ -2,7 +2,7 @@
 <?lu
     if not session.logged then
         status("302 Temporary redirect")
-        header("location", "/login")
+        header("location", "/mail/login")
         return
     else
         local mails = await(webmail.mail:load_mails(tostring(session.logged.id)))
@@ -15,7 +15,7 @@
             | <h1>#[[#mails.mails]] e-mails received</h1>
             for _, mail in ipairs(mails.mails) do
                 ```
-                <a href="#[[to_url('/email', {id=mail.id, u=session.logged.id})]]" class="e-mail">
+                <a href="#[[to_url('/mail/email', {id=mail.id, u=session.logged.id})]]" class="e-mail">
                     <div class="subject">#[[mail.subject]]</div>
                     <div class="sender">#[[mail.from.email]]</div>
                 </a>
