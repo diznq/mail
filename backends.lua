@@ -28,6 +28,15 @@ function smtp_user_repository:get_user(email)
     return resolver
 end
 
+--- Get user by ID
+---@param id string user e-mail address
+---@return aiopromise<smtp_user> user
+function smtp_user_repository:get_user_by_id(id)
+    local resolve, resolver = aio:prepare_promise()
+    resolve({name = id, email = id})
+    return resolver
+end
+
 --- Login with username (or e-mail) and password
 ---@param email string username or e-mail
 ---@param password string password

@@ -1,0 +1,18 @@
+<?include shared.priv.html ?>
+<?lu
+    local params = aio:parse_query(body)
+    if params.password and params.email then
+        local found = await(webmail.mail:login(params.email, params.password))
+        if found and not iserror(found) then
+            status("302 Temporary redirect")
+            header("set-cookie", "pid=" .. aio:encrypt(tostring(found.id), aio:create_key("/session")) .. "; max-age=31536000; HttpOnly")
+            header("location", "/")
+            return
+        elseif iserror(found) then
+            locals.errors = {found.error}
+        end
+    end
+    locals.errors = locals.errors or {"Invalid username or password"}
+    locals.body = params
+?>
+<?include login.html ?>

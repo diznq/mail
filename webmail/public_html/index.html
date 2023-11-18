@@ -1,0 +1,27 @@
+<?include header.priv.html ?>
+<?lu
+    if not session.logged then
+        status("302 Temporary redirect")
+        header("location", "/login")
+        return
+    else
+        local mails = await(webmail.mail:load_mails(tostring(session.logged.id)))
+        if iserror(mails) then
+            | <h1>Failed to load the mailbox</h1>
+            | <p>Error: #[[mails.error]]</p>
+        elseif #mails.mails == 0 then
+            | <h1>Your mailbox is empty</h1>
+        else
+            | <h1>#[[#mails.mails]] e-mails received</h1>
+            for _, mail in ipairs(mails.mails) do
+                ```
+                <a href="#[[to_url('/email', {id=mail.id, u=session.logged.id})]]" class="e-mail">
+                    <div class="subject">#[[mail.subject]]</div>
+                    <div class="sender">#[[mail.from.email]]</div>
+                </a>
+                ```
+            end
+        end
+    end
+?>
+<?include footer.priv.html ?>

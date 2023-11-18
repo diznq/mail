@@ -1,5 +1,6 @@
-local backend = require("core_mail.backends")
-local webmail = require("core_mail.webmail")
+local backend = require("mail.backends")
+local webmail = require("mail.webmail")
+local mysql_backend = require("mail.mysql_backend")
 local smtp = require("aio.lib.smtp")
 
 
@@ -27,7 +28,7 @@ function core_mail:init(params)
 end
 
 function core_mail:webmail_init()
-    webmail:init()
+    webmail:init({mail = self})
 end
 
 function core_mail:smtp_init()
@@ -45,9 +46,9 @@ function core_mail:smtp_init()
                         return handler.error("delivery failed")
                     end
                 end
-                local mail_promises = {} --[[aio:map({...}, function (user)
+                local mail_promises = aio:map({...}, function (user)
                     return self.mail_repository:store_mail(user, mail)
-                end)--]]
+                end)
                 aio:gather(unpack(mail_promises))(function (...)
                     for _, state in ipairs({...}) do
                         if iserror(state) then return handler.error("storing failed") end
@@ -57,6 +58,14 @@ function core_mail:smtp_init()
             end)
         end)
     end)
+end
+
+function core_mail:get_user(email)
+    return self.user_repository:get_user(email)
+end
+
+function core_mail:get_user_by_id(id)
+    return self.user_repository:get_user_by_id(id)
 end
 
 --- Log-in user
@@ -85,9 +94,19 @@ function core_mail:load_mail(user_id, mail_id)
 end
 
 if not ... then
+    local email_backend = mysql_backend.backend
+    email_backend:init({
+        host = os.getenv("MYSQL_HOST"),
+        port = tonumber(os.getenv("MYSQL_PORT") or "3306"),
+        user = os.getenv("MYSQL_USER") or "mail",
+        password = os.getenv("MYSQL_PASSWORD") or "smtp25",
+        db = os.getenv("MYSQL_DB") or "mails"
+    })
     core_mail:init({
         smtp = PORT % 1000 == 25,
-        webmail = PORT >= 8000
+        webmail = PORT >= 8000,
+        users = mysql_backend.users,
+        mails = mysql_backend.mails
     })
 end
 
