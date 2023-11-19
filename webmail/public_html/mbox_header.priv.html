@@ -1,0 +1,30 @@
+<?include header.priv.html ?>
+<?lu
+    if not session.logged then
+        status("302 Temporary redirect")
+        header("location", "/mail/login")
+        return
+    else
+        local subfolders = await(webmail.mail:get_subfolders(tostring(session.logged.id)))
+        write("<h1 class='title'>Hello, " .. codec.html_encode(session.logged.name) .. "</h1>")
+        post_render(function(locals, text)
+            if locals.title then
+                return text:gsub("<h1 class='title'>(.-)</h1>", function()
+                    return "<h1>" .. escape(locals.title) .. "</h1>"
+                end)
+            end
+            return text
+        end)
+        | <div class="mailbox">
+            | <div class="subfolders">
+            for _, subfolder in ipairs(subfolders.subfolders) do
+                local cls = subfolder.unread > 0 and "unread" or "read"
+                local link = nil
+                if subfolder.system then cls = cls .. " system" end
+                if subfolder.link ~= "[all]" then link = subfolder.link end
+                | <a href="#[[to_url('/mail/', {e=false, subfolder = link})]]" class="subfolder #[[cls]]">#[[subfolder.name]] (#[[subfolder.unread]]/#[[subfolder.count]])</a>
+            end
+            | </div>
+            | <div class="mails">
+    end
+?>

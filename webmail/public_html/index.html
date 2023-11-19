@@ -1,4 +1,4 @@
-<?include header.priv.html ?>
+<?include mbox_header.priv.html ?>
 <?lu
     if not session.logged then
         status("302 Temporary redirect")
@@ -13,56 +13,40 @@
                 subfolder = ""
             end
         end
-        local subfolders = await(webmail.mail:get_subfolders(tostring(session.logged.id)))
         local mails = await(webmail.mail:load_mails(tostring(session.logged.id), subfolder))
         if iserror(mails) then
             | <h1>Failed to load the mailbox</h1>
             | <p>Error: #[[mails.error]]</p>
         elseif #mails.mails == 0 then
-            | <h1>Hello, #[[session.logged.name]]</h1>
             | <h2>Your mailbox is empty</h2>
         else
-            | <h1>Hello, #[[session.logged.name]]</h1>
-            | <div class="mailbox">
-                | <div class="subfolders">
-                for _, subfolder in ipairs(subfolders.subfolders) do
-                    local cls = subfolder.unread > 0 and "unread" or "read"
-                    local link = nil
-                    if subfolder.system then cls = cls .. " system" end
-                    if subfolder.link ~= "[all]" then link = subfolder.link end
-                    | <a href="#[[to_url('/mail/', {e=false, subfolder = link})]]" class="subfolder #[[cls]]">#[[subfolder.name]] (#[[subfolder.unread]]/#[[subfolder.count]])</a>
+            ```
+            <span class="header">
+                <span>Folder</span>
+                <span>Sender</span>
+                <span class="subject">Subject</span>
+                <span>Time</span>
+            </span>
+            ```
+            for _, mail in ipairs(mails.mails) do
+                local mailClass = "read"
+                if mail.unread then mailClass = "unread" end
+                if mail.subfolder == "" then
+                    mail.subfolder = "[direct]"
+                    mail.subfolderClass = "system"
+                else
+                    mail.subfolderClass = "custom"
                 end
-                | </div>
-                | <div class="mails">
-                    ```
-                    <span class="header">
-                        <span>Folder</span>
-                        <span>Sender</span>
-                        <span class="subject">Subject</span>
-                        <span>Time</span>
-                    </span>
-                    ```
-                    for _, mail in ipairs(mails.mails) do
-                        local mailClass = "read"
-                        if mail.unread then mailClass = "unread" end
-                        if mail.subfolder == "" then
-                            mail.subfolder = "[direct]"
-                            mail.subfolderClass = "system"
-                        else
-                            mail.subfolderClass = "custom"
-                        end
-                        ```
-                        <a href="#[[to_url('/mail/email', {id=mail.id, u=session.logged.id})]]" class="mail #[[mailClass]]">
-                            <span class="subfolder #[[mail.subfolderClass]]">#[[mail.subfolder]]</span>
-                            <span class="sender">#[[mail.from.email]]</span>
-                            <span class="subject">#[[mail.subject]]</span>
-                            <span class="time"><nobr>#[[isodate(mail.received)]]</nobr></span>
-                        </a>
-                        ```
-                    end
-                | </div>
-            | </div>
+                ```
+                <a href="#[[to_url('/mail/email', {id=mail.id, u=session.logged.id})]]" class="mail #[[mailClass]]">
+                    <span class="subfolder #[[mail.subfolderClass]]">#[[mail.subfolder]]</span>
+                    <span class="sender">#[[mail.from.email]]</span>
+                    <span class="subject">#[[mail.subject]]</span>
+                    <span class="time"><nobr>#[[isodate(mail.received)]]</nobr></span>
+                </a>
+                ```
+            end
         end
     end
 ?>
-<?include footer.priv.html ?>
+<?include mbox_footer.priv.html ?>
