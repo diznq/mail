@@ -18,6 +18,7 @@ p, div, a, span, nobr {
 .mailbox .subfolders {
     display: flex;
     width: 320px;
+    min-width: 320px;
     background-color: white;
     border-right: 1px solid lightgray;
     margin-right: 1rem;
