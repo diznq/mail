@@ -76,8 +76,27 @@ p, div, a, span, nobr {
     padding: 0.25rem;
 }
 
+.mailbox .mails a.mail span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 0;
+}
+
+.mailbox .mails a.mail .subfolder, .mailbox .mails span.header .subfolder {
+    width: 10%;
+}
+
+.mailbox .mails a.mail .sender, .mailbox .mails span.header .sender {
+    width: 20%;
+}
+
 .mailbox .mails a.mail .subject, .mailbox .mails span.header .subject {
-    width: 60%;
+    width: 50%;
+}
+
+.mailbox .mails a.mail .time, .mailbox .mails span.header .time {
+    width: 20%;
 }
 
 .mailbox .mails a.mail.unread:focus, .mailbox .mails a.mail.unread:link, .mailbox .mails a.mail.unread:active {
