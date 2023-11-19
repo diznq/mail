@@ -5,7 +5,7 @@ local smtp_backends = require("mail.backends")
 
 local direction = { inbound = 0, outbound = 1 }
 
---- @class mysql_backend
+--- @class mysql_backend : smtp_mail_repository, smtp_user_repository
 mysql_backend_ = mysql_backend_ or {
     --- @type mysql
     connection = nil,
@@ -18,7 +18,8 @@ create table if not exists users(
     id int primary key auto_increment,
     handle varchar(120) not null,
     name text not null,
-    password varchar(100) not null
+    password varchar(100) not null,
+    unique(handle)
 );
 
 create table if not exists mails(
@@ -32,7 +33,9 @@ create table if not exists mails(
     mail_sender text not null,
     direction int default 0,
     received_at datetime default current_timestamp,
-    foreign key (user_id) references users(id)
+    unread int default 1,
+    foreign key (user_id) references users(id),
+    index(subfolder)
 );
 ]]
 
@@ -81,11 +84,13 @@ function mysql_backend_:init(params)
             mailSender = { field = "mail_sender", type = orm.t.text },
             mailRaw = { field = "mail_raw", type = orm.t.text },
             direction = { field = "direction", type = orm.t.int },
-            receivedAt = { field = "received_at", type = orm.t.datetime }
+            receivedAt = { field = "received_at", type = orm.t.datetime },
+            unread = { field = "unread", type = orm.t.int },
         },
         findById = true,
         findByUserIdId = true,
-        findByUserId = true
+        findByUserId = true,
+        findByUserIdSubfolder = true
     })
 end
 
@@ -191,7 +196,8 @@ function mysql_backend_:store_mail(user, mail)
         mailSender = mail.sender,
         mailRaw = mail.body,
         direction = direction.inbound,
-        receivedAt = mail.received
+        receivedAt = mail.received,
+        unread = 1
     })(function (result)
         if iserror(result) then
             resolve({error = result.error, ok = false})
@@ -202,14 +208,46 @@ function mysql_backend_:store_mail(user, mail)
     return resolver
 end
 
+--- Get user's e-mail subfolders
+---@param user_id string user ID
+---@return aiopromise<{error: string|nil, subfolders: smtp_subfolder[]}> subfolders
+function mysql_backend_:get_subfolders(user_id)
+    local resolve, resolver = aio:prepare_promise()
+    self.connection:select("SELECT subfolder, COUNT(*) as c, SUM(unread) as u FROM mails WHERE user_id = '%s' GROUP BY subfolder", user_id)(function (rows, errorOrColumns)
+        if rows == nil then
+            resolve(make_error("failed to select subfolders"))
+        else
+            resolve({
+                subfolders = aio:map(rows, function (result, index, ...)
+                    return {
+                        name = result.subfolder == "" and "[direct]" or result.subfolder,
+                        count = tonumber(result.c),
+                        unread = tonumber(result.u),
+                        link = result.subfolder == "" and "[direct]" or result.subfolder,
+                        system = result.subfolder == ""
+                    }
+                end)
+            })
+        end
+    end)
+    return resolver
+end
+
 --- Retrieve all e-mails for e-mail address
 ---@param user_id string user ID
+---@param subfolder string|nil subfolder
 ---@param pivot string|nil pivot point
 ---@param size integer|nil limit
 ---@return aiopromise<{mails: mailparam[], error: string?, pivot: string}> mails
-function mysql_backend_:load_mails(user_id, pivot, size)
+function mysql_backend_:load_mails(user_id, subfolder, pivot, size)
     local resolve, resolver = aio:prepare_promise()
-    self.mails.all:byUserId(user_id, {orderBy = "received_at DESC"})(function (mails)
+    local promise = nil
+    if subfolder ~= nil then
+        promise = self.mails.all:byUserIdSubfolder(user_id, subfolder, {orderBy = "received_at DESC"})
+    else
+        promise = self.mails.all:byUserId(user_id, {orderBy = "received_at DESC"})
+    end
+    promise(function (mails)
         if iserror(mails) then
             resolve(mails)
         else
@@ -233,7 +271,8 @@ function mysql_backend_.transform_mail(mail)
         sender = mail.mailSender,
         id = mail.id,
         subject = mail.mailSubject,
-        body = mail.mailRaw
+        body = mail.mailRaw,
+        unread = mail.unread > 0
     }
 end
 
@@ -247,7 +286,9 @@ function mysql_backend_:load_mail(user_id, mail_id)
         if mail == nil or iserror(mail) then
             resolve(mail or make_error("invalid e-mail"))
         else
-            resolve(self.transform_mail(mail))
+            self.mails:update(mail, {unread = 0})(function (result)
+                resolve(self.transform_mail(mail))
+            end)
         end
     end)
     return resolver

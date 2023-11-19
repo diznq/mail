@@ -76,13 +76,39 @@ function core_mail:login(email, password)
     return self.user_repository:login(email, password)
 end
 
+--- Get user's e-mail subfolders
+---@param user_id string user ID
+---@return aiopromise<{error: string|nil, subfolders: smtp_subfolder[]}> subfolders
+function core_mail:get_subfolders(user_id)
+    local resolve, resolver = aio:prepare_promise()
+    self.mail_repository:get_subfolders(user_id)(function (result)
+        local all = {
+            name = "All",
+            count = 0,
+            unread = 0,
+            link = "[all]",
+            system = true
+        }
+        if not iserror(result) then
+            for _, subfolder in ipairs(result.subfolders) do
+                all.count = all.count + subfolder.count
+                all.unread = all.unread + subfolder.unread
+            end
+            table.insert(result.subfolders, 1, all)
+        end
+        resolve(result)
+    end)
+    return resolver
+end
+
 --- Load mails
 ---@param user_id string user ID
+---@param subfolder string|nil subfolder
 ---@param pivot string? pivot point
 ---@param size integer? how many e-mails to retrieve
 ---@return aiopromise<mailparam> emails list of all emails
-function core_mail:load_mails(user_id, pivot, size)
-    return self.mail_repository:load_mails(user_id, pivot, size)
+function core_mail:load_mails(user_id, subfolder, pivot, size)
+    return self.mail_repository:load_mails(user_id, subfolder, pivot, size)
 end
 
 --- Retrieve full e-core_mail

@@ -10,6 +10,15 @@ local smtp_user = {
     error = nil
 }
 
+--- @class smtp_subfolder
+local smtp_subfolder = {
+    name = "All",
+    link = "[all]",
+    count = 0,
+    unread = 0,
+    system = false
+}
+
 --- @class smtp_user_repository
 local smtp_user_repository = {
     users = {}
@@ -61,12 +70,22 @@ function smtp_mail_repository:store_mail(user, mail)
     return resolver
 end
 
+--- Get user's e-mail subfolders
+---@param user_id string user ID
+---@return aiopromise<{error: string|nil, subfolders: smtp_subfolder[]}> subfolders
+function smtp_mail_repository:get_subfolders(user_id)
+    local resolve, resolver = aio:prepare_promise()
+    resolve({})
+    return resolver
+end
+
 --- Retrieve all e-mails for e-mail address
 ---@param user_id string user ID
+---@param subfolder string|nil subfolder
 ---@param pivot string|nil pivot point
 ---@param size integer|nil limit
 ---@return aiopromise<{mails: mailparam[], error: string?, pivot: string}> mails
-function smtp_mail_repository:load_mails(user_id, pivot, size)
+function smtp_mail_repository:load_mails(user_id, subfolder, pivot, size)
     local resolve, resolver = aio:prepare_promise()
     local mails = self.mails[user_id] or {}
     local mail_array = {}

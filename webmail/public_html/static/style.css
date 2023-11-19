@@ -2,51 +2,104 @@ h1 {
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
 }
 
+* {
+    box-sizing: border-box;
+}
+
 p, div, a, span, nobr {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
-.e-mails {
+.mailbox {
+    display: flex;
+    flex-direction: row;
+}
+
+.mailbox .subfolders {
+    display: flex;
+    width: 320px;
+    background-color: white;
+    border-right: 1px solid lightgray;
+    margin-right: 1rem;
+    padding-right: 1rem;
+    flex-direction: column;
+}
+
+.mailbox .subfolders a.subfolder {
+    padding: 0.25rem;
+    margin-top: 2px;
+}
+
+.mailbox .subfolders a.subfolder.unread {
+    font-weight: 600;
+}
+
+.mailbox .subfolders a.subfolder.system {
+    background-color: #F0F0F0;
+}
+
+.mailbox .subfolders a.subfolder:hover {
+    background-color: #E0E0E0;
+}
+
+.mailbox .subfolders a.subfolder:link, .mailbox .subfolders a.subfolder:focus, .mailbox .subfolders a.subfolder:active, .mailbox .subfolders a.subfolder:visited {
+    color: #202020;
+}
+
+.mailbox .subfolders a.subfolder.system:link, .mailbox .subfolders a.subfolder.system:focus, .mailbox .subfolders a.subfolder.system:active, .mailbox .subfolders a.subfolder.system:visited {
+    color: black;
+}
+
+.mailbox .mails {
     display: table;
     width: 100%;
 }
 
-a.e-mail {
+.mailbox .mails a.mail {
     display: table-row;
     padding: 1rem;
     cursor: pointer;
 }
 
-span.header {
+.mailbox .mails span.header {
     display: table-row;
     padding: 1em;
     font-weight: 600;
 }
 
-a.e-mail:hover {
+.mailbox .mails a.mail:hover {
     background-color: beige;
 }
 
-a.e-mail span, span.header span {
+.mailbox .mails a.mail span, .mailbox .mails span.header span {
     display: table-cell;
     padding: 0.25rem;
 }
 
-a.e-mail .subject {
-    width: 70%;
+.mailbox .mails a.mail .subject, .mailbox .mails span.header .subject {
+    width: 60%;
 }
 
-a:focus, a:link, a:active {
+.mailbox .mails a.mail.unread:focus, .mailbox .mails a.mail.unread:link, .mailbox .mails a.mail.unread:active {
     color: navy;
     text-decoration: underline;
     font-weight: 600;
 }
 
-a:hover {
-    text-decoration: underline !important;
+.mailbox .mails a.mail.unread:visited {
+    color: navy;
+    text-decoration: none;
+    font-weight: 400;
 }
 
-a:visited {
+.mailbox .mails a.mail.read:focus, .mailbox .mails a.mail.read:link, .mailbox .mails a.mail.read:active {
     color: black;
-    text-decoration: none !important;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.mailbox .mails a.mail.read:visited {
+    color: black;
+    text-decoration: none;
+    font-weight: 400;
 }
