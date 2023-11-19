@@ -108,13 +108,13 @@ p, div, a, span, nobr {
 .mailbox .mails a.mail.unread:visited {
     color: navy;
     text-decoration: none;
-    font-weight: 400;
+    font-weight: 600;
 }
 
 .mailbox .mails a.mail.read:focus, .mailbox .mails a.mail.read:link, .mailbox .mails a.mail.read:active {
     color: black;
     text-decoration: underline;
-    font-weight: 600;
+    font-weight: 400;
 }
 
 .mailbox .mails a.mail.read:visited {
