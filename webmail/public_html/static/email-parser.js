@@ -15,7 +15,7 @@ function parseEmail() {
                     let data_line = data.substring(rn + 1);
                     let quoted_printable = type_line.match(/Content-Transfer-Encoding: quoted-printable/i);
                     if(quoted_printable) {
-                        data_line = data_line.replace(/=([A-F0-9][A-F0-9])/g, (full, m) => String.fromCharCode(parseInt(m, 16)))
+                        data_line = decodeUtfQStr(data_line)
                     }
                     const match = /content-type:([a-z/ ]+)/i.exec(type_line);
                     if(match && typeof(match[1]) == "string") {

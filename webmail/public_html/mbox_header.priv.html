@@ -6,11 +6,11 @@
         return
     else
         local subfolders = await(webmail.mail:get_subfolders(tostring(session.logged.id)))
-        write("<h1 class='title'>Hello, " .. codec.html_encode(session.logged.name) .. "</h1>")
+        write("<h1 id='title'>Hello, " .. codec.html_encode(session.logged.name) .. "</h1>")
         post_render(function(locals, text)
             if locals.title then
-                return text:gsub("<h1 class='title'>(.-)</h1>", function()
-                    return "<h1>" .. escape(locals.title) .. "</h1>"
+                return text:gsub("<h1 id='title'>(.-)</h1>", function()
+                    return "<h1 id='title'>" .. escape(locals.title) .. "</h1>"
                 end)
             end
             return text
