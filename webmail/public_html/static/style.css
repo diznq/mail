@@ -123,3 +123,26 @@ p, div, a, span, nobr {
     text-decoration: none;
     font-weight: 400;
 }
+
+.mailbox .metadata {
+    font-style: italic;
+    border-left: 3px solid lightgray;
+    padding-left: 1rem;
+    margin: 0.1rem;
+}
+
+.mailbox .mail .controls {
+    display: flex;
+    width: 600px;
+}
+
+.mailbox .mail .controls .control {
+    flex-grow: 1;
+    background: white;
+    border: 1px solid gray;
+    border-radius: 0px;
+    margin: 0.1em;
+    padding: 0.25em;
+    color: black;
+    cursor: pointer;
+}

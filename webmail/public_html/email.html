@@ -5,6 +5,10 @@
         header("location", "/mail/login")
         return
     else
+        ```
+        <script src="./static/sanitizer.min.js"></script>
+        <script src="./static/email-parser.js"></script>
+        ```
         local email = await(webmail.mail:load_mail(tostring(session.logged.id), query.e.id))
         if iserror(email) then
             | <h1>E-mail not found</h1>
@@ -17,10 +21,23 @@
                 email.subfolderClass = "custom"
             end
             locals.title = email.subject
-            | <span class="time">Received at: <nobr>#[[isodate(email.received)]]</nobr></span><br>
-            | <span class="sender">Sender address: <nobr>#[[email.sender]]</nobr></span><br>
-            | <span class="folder #[[email.subfolderClass]]">Folder: <nobr>#[[email.subfolder]]</nobr></span><br>
-            | <pre>#[[email.body]]</pre>
+            | <div class="metadata">
+                | <span class="time">Received at: <nobr>#[[isodate(email.received)]]</nobr></span><br>
+                | <span class="sender">Sender address: <nobr>#[[email.sender]]</nobr></span><br>
+                | <span class="folder #[[email.subfolderClass]]">Folder: <nobr>#[[email.subfolder]]</nobr></span><br>
+            | </div>
+            | <div class="mail">
+                | <div class="controls">
+                    | <button class="control" onclick="setDisplayMode('html')" style="display: none" id="ctl_html">HTML</button>
+                    | <button class="control" onclick="setDisplayMode('text')" style="display: none" id="ctl_text">Text</button>
+                    | <button class="control" onclick="setDisplayMode('raw')" style="display: none" id="ctl_raw">Raw</button>
+                | </div>
+                | <div class="content">
+                    | <div id="email_html" data-email-view="html" style="display: none"></div>
+                    | <pre id="email_text" data-email-view="text" style="display: none"></pre>
+                    | <pre id="email_raw"  data-email-view="raw"  style="display: none">#[[email.body]]</pre>
+                | </div>
+            | </div>
         end
     end
 ?>
