@@ -38,6 +38,11 @@
                 else
                     mail.subfolderClass = "custom"
                 end
+                if mail.inbound then
+                    mail.subfolder = mail.subfolder
+                else
+                    mail.subfolder = mail.subfolder .. ">"
+                end
                 ```
                 <a href="#[[to_url('/mail/email', {id=mail.id, u=session.logged.id})]]" class="mail #[[mailClass]]">
                     <span class="subfolder #[[mail.subfolderClass]]">#[[mail.subfolder]]</span>

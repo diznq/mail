@@ -2,24 +2,31 @@ local backend = require("mail.backends")
 local webmail = require("mail.webmail")
 local mysql_backend = require("mail.mysql_backend")
 local smtp = require("aio.lib.smtp")
+local mailer = require("aio.lib.smtp_client")
+local dns = require("aio.lib.dns")
+
+aio:set_dns(dns)
 
 
 ---@class core_mail
-core_mail = core_mail or {
+core_mail = {
     --- @type smtp_user_repository
     user_repository = backend.users,
     --- @type smtp_mail_repository
-    mail_repository = backend.mails
+    mail_repository = backend.mails,
+    mailer = mailer
 }
 
 ---Initialize the core_mail component
----@param params {users: smtp_user_repository|nil, mails: smtp_mail_repository|nil, smtp: boolean|nil, webmail: boolean|nil, pop3: boolean|nil} params
+---@param params {users: smtp_user_repository|nil, mails: smtp_mail_repository|nil, smtp: boolean|nil, webmail: boolean|nil, pop3: boolean|nil, host: string|nil, logging: boolean|nil} params
 function core_mail:init(params)
     self.user_repository = params.users or backend.users
     self.mail_repository = params.mails or backend.mails
+    
+    self.mailer:init({host = params.host or "localhost", logging=params.logging, ssl=true})
 
     if params.smtp then
-        self:smtp_init()
+        self:smtp_init(params.host or "localhost")
     end
 
     if params.webmail then
@@ -31,9 +38,10 @@ function core_mail:webmail_init()
     webmail:init({mail = self})
 end
 
-function core_mail:smtp_init()
+function core_mail:smtp_init(host)
     smtp:default_initialize()
     smtp:set_logging(true)
+    smtp.host = host or "localhost"
 
     smtp:register_handler("main", function (mail, handler)
         aio:async(function ()
@@ -119,6 +127,73 @@ function core_mail:load_mail(user_id, mail_id)
     return self.mail_repository:load_mail(user_id, mail_id)
 end
 
+--- Send e-mail
+---@param from_addr string sender e-mail
+---@param to_addr string target e-mail
+---@param subject string email subject
+---@param body string email body
+---@return aiopromise<{ok: boolean, error: string|nil}>
+function core_mail:send_mail(from_addr, to_addr, subject, body)
+    local resolve, resolver = aio:prepare_promise()
+    local headers = {}
+    local encoded = self.mailer:encode_message(from_addr, {to_addr}, headers, subject, body)
+    self:get_user(from_addr)(function (sender)
+        if iserror(sender) then
+            resolve(make_error("sender (" .. from_addr .. ") is not a part of this server: " .. sender.error))
+            return
+        end
+        self:get_user(to_addr)(function (target)
+            --- @type mailparam
+            local mail = {
+                from = sender,
+                to = target,
+                id = headers["Message-ID"]:gsub("<(.*)>", "$1"),
+                ---@diagnostic disable-next-line: assign-type-mismatch
+                received = os.date("*t"),
+                sender = "internal",
+                subfolder = target.subfolder,
+                subject = subject,
+                unread = true,
+                body = encoded
+            }
+            if not iserror(target) then
+                -- if target is within this mail server store it right away
+                self.mail_repository:store_mail(target, mail)(function (result)
+                    if iserror(result) then
+                        make_error("failed to store mail: " .. result.error)
+                        return
+                    end
+                    mail.id = "o-" .. mail.id
+                    mail.unread = false
+                    self.mail_repository:store_mail(sender, mail, true)(function (result)
+                        resolve(result)
+                    end)
+                end)
+            else
+                -- if target is outside, deliver the mail first and then store local outbound copy
+                self.mailer:send_mail({
+                    from = from_addr,
+                    to = to_addr,
+                    headers = headers,
+                    subject = subject,
+                    body = body
+                })(function (result)
+                    if iserror(result) then
+                        make_error("sending mail faled: " .. result.error)
+                        return
+                    end
+                    mail.id = "o-" .. mail.id
+                    mail.unread = false
+                    self.mail_repository:store_mail(sender, mail, true)(function (result)
+                        resolve(result)
+                    end)
+                end)
+            end
+        end)
+    end)
+    return resolver
+end
+
 if not ... then
     local email_backend = mysql_backend.backend
     email_backend:init({
@@ -133,7 +208,8 @@ if not ... then
         smtp = PORT % 1000 == 25,
         webmail = PORT >= 8000,
         users = mysql_backend.users,
-        mails = mysql_backend.mails
+        mails = mysql_backend.mails,
+        host = os.getenv("SMTP_HOST") or "localhost"
     })
 end
 

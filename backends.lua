@@ -60,8 +60,9 @@ end
 --- Store e-mail into repository
 ---@param user smtp_user user that we save e-mail for
 ---@param mail mailparam e-mail
+---@param outbound boolean|nil true if outbound
 ---@return aiopromise<{error: string|nil, ok: boolean|nil}> success
-function smtp_mail_repository:store_mail(user, mail)
+function smtp_mail_repository:store_mail(user, mail, outbound)
     local resolve, resolver = aio:prepare_promise()
     local to = user.id
     self.mails[to] = self.mails[to] or {}

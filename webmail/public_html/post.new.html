@@ -1,0 +1,31 @@
+<?include shared.priv.html ?>
+<?lu
+    if not session.logged or query.e.u == nil or query.e.u ~= tostring(session.logged.id) or query.e.m == nil or query.e.m ~= "p" or query.j == nil then
+        status("302 Temporary redirect")
+        print(codec.json_encode(query))
+        header("location", "/mail/")
+        return
+    else
+        local errors = {}
+        local params = aio:parse_query(body)
+        if params.to == nil or #params.to == 0 then
+            errors[#errors + 1] = "Recipient is missing"
+        elseif not params.to:match("([a-zA-Z0-9.%-_])@([a-zA-Z0-9.%-_])") then
+            errors[#errors + 1] = "Recipient e-mail is malformed"
+        end
+        if params.subject == nil or #params.subject == 0 then params.subject = "No subject" end
+        if params.body == nil or #params.body == 0 then params.body = "-" end
+        if #errors > 0 then
+            status("422 Invalid input")
+            write({errors = errors})
+        else
+            local result = await(webmail.mail:send_mail(session.logged.email, params.to, params.subject, params.body))
+            if iserror(result) then
+                status("500 Internal server error")
+                write({errors = {result.error}})
+            else
+                write({ok = true})
+            end
+        end
+    end
+?>

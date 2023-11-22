@@ -1,0 +1,24 @@
+<?include mbox_header.priv.html ?>
+<?lu
+    if not session.logged or query.e.u == nil or query.e.u ~= tostring(session.logged.id) or query.e.m ~= nil then
+        status("302 Temporary redirect")
+        header("location", "/mail/login")
+        return
+    else
+        locals.title = "New e-mail"
+        ```
+        <script src="./static/send-mail.js"></script>
+        <noscript><h1>You need JavaScript to run this application!</h1></noscript>
+        <form method="post" action="#[[to_url('/mail/new', {u=tostring(session.logged.id), m='p'})]]" id="form">
+            <label for="to">Recipient:</label> <br>
+            <input type="email" name="to" id="to" aria-required="true" required size="40" placeholder="john.doe@acme.tld"> <br>
+            <label for="subject">Subject:</label> <br>
+            <input type="text" name="subject" id="subject" aria-required="true" required size="80" autocomplete="off" placeholder="E-mail subject"> <br>
+            <label for="body">E-mail contents:</label> <br>
+            <textarea id="body" name="body" rows="25" cols="80" placeholder="Write your message here" aria-required="true" required></textarea> <br>
+            <input type="submit" name="submit" value="Send">
+        </form>
+        ```
+    end
+?>
+<?include mbox_footer.priv.html ?>

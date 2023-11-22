@@ -99,9 +99,9 @@ end
 ---@return string email
 ---@return string subfolder
 function mysql_backend_:resolve_email(email)
-    local subfolder, email = email:match("^(.-).mbox.(.+)$")
+    local subfolder, real_email = email:match("^(.-).mbox.(.+)$")
     if subfolder then
-        return email, subfolder
+        return real_email, subfolder
     end
     return email, ""
 end
@@ -112,9 +112,13 @@ end
 function mysql_backend_:get_user(email)
     local resolve, resolver = aio:prepare_promise()
     local real_email, subfolder = self:resolve_email(email)
+    if real_email == nil then
+        resolve(make_error("failed to resolve e-mail address (" .. email .. ") into address and folder"))
+        return resolver
+    end
     self.users.one:byHandle(real_email)(function (result)
         if result == nil then
-            resolve(make_error("user not found"))
+            resolve(make_error("user not found: " .. tostring(real_email) .. ", " .. tostring(subfolder)))
         elseif iserror(result) then
             resolve(result)
         else
@@ -183,8 +187,9 @@ end
 --- Store e-mail into repository
 ---@param user smtp_user user that we save e-mail for
 ---@param mail mailparam e-mail
+---@param outbound boolean|nil true if outbound
 ---@return aiopromise<{error: string|nil, ok: boolean|nil}> success
-function mysql_backend_:store_mail(user, mail)
+function mysql_backend_:store_mail(user, mail, outbound)
     local resolve, resolver = aio:prepare_promise()
     self.mails:insert({
         id = mail.id,
@@ -195,9 +200,9 @@ function mysql_backend_:store_mail(user, mail)
         mailSubject = mail.subject,
         mailSender = mail.sender,
         mailRaw = mail.body,
-        direction = direction.inbound,
+        direction = outbound and direction.outbound or direction.inbound,
         receivedAt = mail.received,
-        unread = 1
+        unread = mail.unread and 1 or 0
     })(function (result)
         if iserror(result) then
             resolve({error = result.error, ok = false})
@@ -272,6 +277,7 @@ function mysql_backend_.transform_mail(mail)
         id = mail.id,
         subject = mail.mailSubject,
         body = mail.mailRaw,
+        inbound = mail.direction == direction.inbound,
         unread = mail.unread > 0
     }
 end
