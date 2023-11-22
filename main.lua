@@ -147,7 +147,7 @@ function core_mail:send_mail(from_addr, to_addr, subject, body)
             local mail = {
                 from = sender,
                 to = target,
-                id = headers["Message-ID"]:gsub("<(.*)>", "$1"),
+                id = headers["Message-ID"]:gsub("<(.*)>", "%1"),
                 ---@diagnostic disable-next-line: assign-type-mismatch
                 received = os.date("*t"),
                 sender = "internal",
