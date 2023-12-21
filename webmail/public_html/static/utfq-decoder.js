@@ -21,9 +21,15 @@ function decodeUtfQStr(data_line, is_inline) {
 function decodeUtfQ(element) {
     if(!element) return;
     const content = element.textContent;
-    if(content.indexOf("=?UTF-8?Q?") == 0) {
-        element.textContent = decodeUtfQStr(content.substring("=?UTF-8?Q?".length), true)
-    }
+    element.textContent = content
+        .replace(/=\?UTF-8\?Q\?(.*?)\?=/g, (full, match) => {
+            return decodeUtfQStr(match);
+        })
+        .replace(/=\?UTF-8\?B\?(.*?)\?=/g, (full, match) => {
+            return decodeURIComponent(atob(match).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''))
+        });
 }
 
 window.addEventListener("load", function() {
