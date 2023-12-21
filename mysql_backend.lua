@@ -89,8 +89,8 @@ function mysql_backend_:init(params)
         },
         findById = true,
         findByUserIdId = true,
-        findByUserId = true,
-        findByUserIdSubfolder = true
+        findByUserId = "SELECT id, user_id, subfolder, mail_from, mail_from_display, mail_subject, mail_sender, direction, received_at, unread FROM mails WHERE user_id='%d'",
+        findByUserIdSubfolder = "SELECT id, user_id, subfolder, mail_from, mail_from_display, mail_subject, mail_sender, direction, received_at, unread FROM mails WHERE user_id = '%d' AND subfolder = '%s'"
     })
 end
 
