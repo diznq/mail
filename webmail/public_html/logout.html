@@ -1,5 +1,11 @@
+<?include shared.priv.html ?>
 <?lu
-    status("302 Temporary redirect")
-    header("set-cookie", "pid=; HttpOnly")
-    header("location", "/")
+    if query.e.u and session.logged and query.e.u == tostring(session.logged.id) then
+        status("302 Temporary redirect")
+        header("set-cookie", "mid=; HttpOnly")
+        header("location", "/mail/login")
+    else
+        status("302 Temporary redirect")
+        header("location", "/mail/")
+    end
 ?>
