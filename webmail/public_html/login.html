@@ -1,4 +1,11 @@
 <?include header.priv.html ?>
+<?lu
+    if session.logged then
+        status("302 Temporary redirect")
+        header("location", "/mail/")
+        return    
+    end
+?>
 <link href="static/login.css" rel="stylesheet">
 <div class="container">
     <div class="login">

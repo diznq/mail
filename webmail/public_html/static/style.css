@@ -100,7 +100,7 @@ p, div, a, span, nobr {
 }
 
 .mailbox .mails a.mail:hover {
-    background-color: lightyellow;
+    background-color: #ffffa0;
 }
 
 .mailbox .mails a.mail span, .mailbox .mails span.header span {
@@ -141,6 +141,14 @@ p, div, a, span, nobr {
     color: navy;
     text-decoration: none;
     font-weight: 600;
+}
+
+.mailbox .mails a.mail.outbound {
+    background-color: #ffbbcc;
+}
+
+.mailbox .mails a.mail.outbound:hover {
+    background-color: #eeaabb;
 }
 
 .mailbox .mails a.mail.read:focus, .mailbox .mails a.mail.read:link, .mailbox .mails a.mail.read:active {
@@ -257,4 +265,16 @@ p, div, a, span, nobr {
 
 .new-mail input[type=submit]:hover {
     background-color: #e3e300;
+}
+
+/* Misc */
+
+.sidebar-logout {
+    background-color: #bbddee;
+    color: black;
+    font-weight: 600;
+}
+
+.sidebar-logout:hover {
+    background-color: #aaccdd;
 }

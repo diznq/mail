@@ -40,8 +40,10 @@
                 end
                 if mail.inbound then
                     mail.subfolder = mail.subfolder
+                    mailClass = mailClass .. " inbound"
                 else
                     mail.subfolder = mail.subfolder .. ">"
+                    mailClass = mailClass .. " outbound"
                 end
                 ```
                 <a href="#[[to_url('/mail/email', {id=mail.id, u=session.logged.id})]]" class="mail #[[mailClass]]">

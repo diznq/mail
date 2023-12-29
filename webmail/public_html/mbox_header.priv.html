@@ -17,7 +17,8 @@
         end)
         | <div class="mailbox">
             | <div class="subfolders">
-            | <a href="#[[to_url('/mail/new', {u = tostring(session.logged.id)})]]" class="sidebar-newmail">+ New-email</a>
+                | <a href="#[[to_url('/mail/new', {u = tostring(session.logged.id)})]]" class="sidebar-newmail">+ New-email</a>
+                | <a href="#[[to_url('/mail/logout', {u = tostring(session.logged.id)})]]" class="sidebar-logout">&lt; Log-out</a>
             for _, subfolder in ipairs(subfolders.subfolders) do
                 local cls = subfolder.unread > 0 and "unread" or "read"
                 local link = nil
