@@ -1,6 +1,6 @@
 function decodeUtfQStr(data_line, is_inline) {
     is_inline = is_inline || false;
-    if(is_inline) data_line = data_line.replace(/_/g, " ").replace(/\?=$/, "");
+    data_line = data_line.replace(/_/g, " ").replace(/\?=$/, "");
     data_line = data_line.replace(/=\n/g, "");
     data_line = data_line.replace(/(=[0-9A-F=\r\n]{2,})/g, (full) => {
         const parts = full.split("=");

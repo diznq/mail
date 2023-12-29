@@ -8,6 +8,10 @@ html, body {
     margin: 0px !important;
 }
 
+body {
+    overflow: scroll;
+}
+
 * {
     box-sizing: border-box;
 }
@@ -20,6 +24,10 @@ hr {
 .container {
     padding: 16px;
     background: white;
+}
+
+.wrap {
+    width: 100%;
 }
 
 p, div, a, span, nobr {
@@ -68,17 +76,15 @@ p, div, a, span, nobr {
 }
 
 .mailbox .mails {
+    width: 100%;
     display: table;
-    width: calc(100vw - 320px);
-    max-width: calc(100vw - 320px);
     padding: 0 1rem;
 }
 
 .mailbox .mails pre {
-    width: calc(100vw - 320px - 4rem);
-    max-width: calc(100vw - 320px - 4rem);
     overflow-x: auto;
     margin: 0 auto;
+    max-width: calc(100vw - 320px - 5rem);
 }
 
 .mailbox .mails a.mail {
