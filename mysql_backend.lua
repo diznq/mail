@@ -10,7 +10,7 @@ mysql_backend_ = mysql_backend_ or {
     --- @type mysql
     connection = nil,
     orm_users = nil,
-    host_name = "localhost"
+    host_names = {"localhost"}
 }
 
 local initialize_query = [[
@@ -40,12 +40,23 @@ create table if not exists mails(
 ]]
 
 --- Initialize MySQL backend
----@param params {user: string, password: string, db: string, host: string|nil, port: integer|nil, salt: string|nil}
+---@param params {user: string, password: string, db: string, host: string|nil, port: integer|nil, salt: string|nil, host_names: string[]|nil}
 function mysql_backend_:init(params)
     self.connect_params = params
     self.salt = params.salt or "salt"
     if self.connection then return end
     self.connection = mysql:new()
+
+    if params.host_names then
+        self.host_names = params.host_names
+    else
+        local names = os.getenv("SMTP_HOSTS") or os.getenv("SMTP_HOST") or "localhost"
+        self.host_names = {}
+        for word in string.gmatch(names, "([^,]+)") do
+            self.host_names[#self.host_names+1] = word
+        end
+    end
+
     self.connection:connect(params.user, params.password, params.db, params.host, params.port)(function (ok, err)
         if not ok then
             print("[mysql_backend] failed to connect to MySQL server: ", err)
@@ -102,6 +113,12 @@ function mysql_backend_:resolve_email(email)
     local subfolder, real_email = email:match("^(.-).mbox.(.+)$")
     if subfolder then
         return real_email, subfolder
+    end
+    for _, host_name in ipairs(self.host_names) do
+        subfolder, real_email = email:match("^(.-)@(.-)." .. host_name:gsub("%.", "%%."))
+        if subfolder and real_email then
+            return real_email .. "@" .. host_name, subfolder
+        end
     end
     return email, ""
 end
