@@ -17,7 +17,7 @@
         end)
         | <div class="mailbox">
             | <div class="subfolders">
-            | <a href="#[[to_url('/mail/new', {u = tostring(session.logged.id)})]]"><strong>+ New-email</strong></a>
+            | <a href="#[[to_url('/mail/new', {u = tostring(session.logged.id)})]]" class="sidebar-newmail">+ New-email</a>
             for _, subfolder in ipairs(subfolders.subfolders) do
                 local cls = subfolder.unread > 0 and "unread" or "read"
                 local link = nil
@@ -26,6 +26,7 @@
                 | <a href="#[[to_url('/mail/', {e=false, subfolder = link})]]" class="subfolder #[[cls]]">#[[subfolder.name]] (#[[subfolder.unread]]/#[[subfolder.count]])</a>
             end
             | </div>
+            | <div>
             | <div class="mails">
     end
 ?>
