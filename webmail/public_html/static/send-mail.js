@@ -38,7 +38,8 @@ window.addEventListener("load", function() {
         xhr.send(serialize({
             to: document.getElementById("to").value,
             subject: document.getElementById("subject").value,
-            body: document.getElementById("body").value
+            body: document.getElementById("body").value,
+            folder: document.getElementById("folder").value
         }))
     }
 })
