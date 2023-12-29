@@ -11,7 +11,7 @@
         <noscript><h1>You need JavaScript to run this application!</h1></noscript>
         <form method="post" action="#[[to_url('/mail/new', {u=tostring(session.logged.id), m='p'})]]" id="form" class="new-mail">
             <label for="folder">Folder:</label> <br>
-            <input type="email" name="folder" id="folder" required size="40" value="#[[query.folder or '']]" placeholder="[direct]"><br>
+            <input type="text" name="folder" id="folder" size="40" value="#[[query.folder or '']]" placeholder="[direct]"><br>
             <label for="to">Recipient:</label><br>
             <input type="email" name="to" id="to" aria-required="true" required size="40" placeholder="john.doe@acme.tld"><br>
             <label for="subject">Subject:</label><br>
