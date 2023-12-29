@@ -209,6 +209,7 @@ if not ... then
         webmail = PORT >= 8000,
         users = mysql_backend.users,
         mails = mysql_backend.mails,
+        logging = true,
         host = os.getenv("SMTP_HOST") or "localhost"
     })
 end
