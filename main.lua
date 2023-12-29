@@ -23,7 +23,14 @@ function core_mail:init(params)
     self.user_repository = params.users or backend.users
     self.mail_repository = params.mails or backend.mails
     
-    self.mailer:init({host = params.host or "localhost", logging=params.logging, ssl=true})
+    self.mailer:init({
+        host = params.host or "localhost",
+        logging=params.logging, 
+        ssl=true,
+        dkim_domain=os.getenv("DKIM_DOMAIN"),
+        dkim_privkey=os.getenv("DKIM_PRIVKEY"),
+        dkim_selector=os.getenv("DKIM_SELECTOR")
+    })
 
     if params.smtp then
         self:smtp_init(params.host or "localhost")
