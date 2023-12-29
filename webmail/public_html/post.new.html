@@ -20,12 +20,12 @@
             write({errors = errors})
         else
             local sender_email = session.logged.email
-            if query.folder then
-                query.folder = query.folder:gsub("^( \r\n\t)+", ""):gsub("( \r\n\t+)$", "")
-                if #query.folder > 0 and query.folder ~= "[direct]" and (not query.folder:find("@")) then
+            if params.folder then
+                params.folder = params.folder:gsub("^( \r\n\t)+", ""):gsub("( \r\n\t+)$", "")
+                if #params.folder > 0 and params.folder ~= "[direct]" and (not params.folder:find("@")) then
                     local sender_name, sender_host = sender_email:match("^(.-)@(.+)")
                     if sender_name and sender_host then
-                        sender_email = query.folder .. "@" .. sender_name .. "." .. sender_host
+                        sender_email = params.folder .. "@" .. sender_name .. "." .. sender_host
                     end
                 end
             end
