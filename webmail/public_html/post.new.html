@@ -19,7 +19,17 @@
             status("422 Invalid input")
             write({errors = errors})
         else
-            local result = await(webmail.mail:send_mail(session.logged.email, params.to, params.subject, params.body))
+            local sender_email = session.logged.email
+            if query.folder then
+                query.folder = query.folder:gsub("^( \r\n\t)+", ""):gsub("( \r\n\t+)$", "")
+                if #query.folder > 0 and query.folder ~= "[direct]" and (not query.folder:find("@")) then
+                    local sender_name, sender_host = sender_email:match("^(.-)@(.+)")
+                    if sender_name and sender_host then
+                        sender_email = query.folder .. "@" .. sender_name .. "." .. sender_host
+                    end
+                end
+            end
+            local result = await(webmail.mail:send_mail(sender_email, params.to, params.subject, params.body))
             if iserror(result) then
                 status("500 Internal server error")
                 write({errors = {result.error}})
